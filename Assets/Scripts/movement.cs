@@ -5,15 +5,17 @@ using UnityEngine;
 public class movement : MonoBehaviour
 {
     [SerializeField] public Rigidbody2D character;
+    [SerializeField] public GameObject MareoAlert;
     float movX, movY;
-    float speed = 10f;
+    float speed = 5f;
     [SerializeField] public float mareo = 0;
+    public Color original;
 
 
     // Start is called before the first frame update
     void Start()
     {
-
+        original = GetComponentInParent<SpriteRenderer>().color;
         character = GetComponent<Rigidbody2D>();
     }
 
@@ -21,7 +23,7 @@ public class movement : MonoBehaviour
     void Update()
     {
         movX = Input.acceleration.x * speed;
-        movY = Input.acceleration.y * speed;
+        movY = Input.acceleration.y > 0? Input.acceleration.y * speed*2 : Input.acceleration.y;
 
         transform.position = new Vector2(Mathf.Clamp(transform.position.x, -7.5f, 7.5f), transform.position.y);
     }
@@ -29,15 +31,23 @@ public class movement : MonoBehaviour
     private void FixedUpdate()
     {
         character.velocity = new Vector2(movX, movY);
-       // checkMareo();
+        checkMareo();
     }
     private void checkMareo()
     {
-
-        if (Mathf.Abs(character.velocity.x) > 0.5 || Mathf.Abs(character.velocity.y) > 0.5)
-            mareo += 0.02f;
+        if (Mathf.Abs(character.velocity.x) > 2)
+            mareo += 0.01f;
         else
-            mareo -= 0.01f;
+        {
+            if (!MareoAlert.activeSelf)
+            {
+                mareo -= 0.01f;
+            }
+            else
+            {
+                mareo -= 0.002f;
+            }
+        }
 
         if (mareo < 0)
             mareo = 0;
@@ -45,9 +55,9 @@ public class movement : MonoBehaviour
         if (mareo > 1)
             mareo = 1;
 
-        //spriteShape.spriteShapeRenderer.color = new Color(original.r + mareo * 1.3f, original.g - mareo * 1.3f, original.b - mareo * 1.3f, original.a);
+        character.GetComponentInParent<SpriteRenderer>().color = new Color(original.r + mareo * 0.7f, original.g - mareo * 0.7f, original.b - mareo * 0.7f, original.a);
 
-        //MareoAlert.SetActive(mareo > 0.5);
+        MareoAlert.SetActive(mareo > 0.5);
 
         Debug.Log("-------\n" + mareo + "\n--------\n" + "|" + character.velocity.x * 5 + "\n-------");
 
